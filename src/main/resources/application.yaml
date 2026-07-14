@@ -1,0 +1,59 @@
+spring:
+  application:
+    name: sb-kafka-producer-sample
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/orders_db}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+
+  flyway:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/orders_db}
+    user: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    enabled: true
+    locations:
+      - classpath:db/migration
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+    properties:
+      mail:
+        smtp:
+          auth: ${MAIL_SMTP_AUTH:false}
+          starttls:
+            enable: ${MAIL_SMTP_STARTTLS:false}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+
+app:
+  kafka:
+    order-topic: ${KAFKA_ORDER_TOPIC:orders.created}
+    invoice-consumer-group-id: ${KAFKA_INVOICE_CONSUMER_GROUP_ID:invoice-email-consumer}
+  mail:
+    from: ${APP_MAIL_FROM:billing@example.com}
+  outbox:
+    batch-size: ${OUTBOX_BATCH_SIZE:20}
+    fixed-delay-ms: ${OUTBOX_FIXED_DELAY_MS:3000}
+    max-attempts: ${OUTBOX_MAX_ATTEMPTS:5}
