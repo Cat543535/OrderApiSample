@@ -1,16 +1,16 @@
 # Order API
 
-Проект на Spring Boot 4.0.4 с использованием Java 25, PostgreSQL, Kafka, Mailpit, Flyway, OpenAPI, Actuator и паттерна outbox.
+Проект на Spring Boot 3.4.2 с использованием Java 21, PostgreSQL, Kafka, Mailpit, Flyway, OpenAPI, Actuator и паттерна outbox.
 
 ## Стек
 
-- Java 25
-- Spring Boot 4.0.4
+- Java 21
+- Spring Boot 3.4.2
 - Spring Web MVC
 - Spring Data JPA
 - Spring Validation
-- PostgreSQL
-- Apache Kafka
+- PostgreSQL 17
+- Apache Kafka 4.1.0
 - Spring Mail
 - Mailpit
 - Flyway
@@ -39,28 +39,34 @@
 3. `OrderCreatedInvoiceConsumer` читает (consumes) сообщение из Kafka и создает email со счетом (invoice), а также второе outbox-событие `EMAIL_INVOICE_REQUESTED`.
 4. `OutboxPublisher` отправляет email-событие через SMTP и помечает заказ как `INVOICE_DELIVERED`.
 
-Это позволяет сохранять независимость записи в базу данных, публикации в Kafka и отправки email, сохраняя при этом состояние с возможностью повторных попыток в таблице `outbox_events`.
+## Запуск в Docker
 
-## Процесс запуска 
-
-1. Запуск PostgreSQL, Kafka, Kafka UI и Mailpit:
-
+1. Запустите все сервисы:
 ```bash
-docker compose up --build
+docker-compose up --build
 ```
 
+2. Основные инструменты и UI:
+- **Swagger UI**: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+- **pgAdmin (БД)**: [http://localhost:5050](http://localhost:5050)
+  - *Логин*: `admin@admin.com`
+  - *Пароль*: `admin`
+- **Kafka UI**: [http://localhost:8081](http://localhost:8081)
+- **Mailpit**: [http://localhost:8025](http://localhost:8025)
 
-3. Основные эндпоинты:
+### Как подключить БД в pgAdmin:
+После входа в [pgAdmin](http://localhost:5050):
+1. Нажмите **Add New Server**.
+2. Вкладка **General**: Name = `OrderDB`.
+3. Вкладка **Connection**:
+   - **Host name/address**: `postgres` (имя сервиса в Docker)
+   - **Port**: `5432`
+   - **Maintenance database**: `orders_db`
+   - **Username**: `postgres`
+   - **Password**: `postgres`
+4. Нажмите **Save**.
 
-- Swagger UI: `http://localhost:8080/swagger-ui.html`
-- OpenAPI docs: `http://localhost:8080/v3/api-docs`
-- Health: `http://localhost:8080/actuator/health`
-- Kafka UI: `http://localhost:8081`
-- Mailpit UI: `http://localhost:8025`
-
-## Переменные окружения
-
-Приложение автоматически импортирует файл `.env`.
+## Переменные окружения (.env)
 
 ```env
 DB_URL=jdbc:postgresql://localhost:5432/orders_db
@@ -68,36 +74,9 @@ DB_USERNAME=postgres
 DB_PASSWORD=postgres
 KAFKA_BOOTSTRAP_SERVERS=localhost:9092
 KAFKA_ORDER_TOPIC=orders.created
-KAFKA_INVOICE_CONSUMER_GROUP_ID=invoice-email-consumer
-MAIL_HOST=localhost
-MAIL_PORT=1025
-MAIL_SMTP_AUTH=false
-MAIL_SMTP_STARTTLS=false
-APP_MAIL_FROM=billing@example.com
 OUTBOX_BATCH_SIZE=20
 OUTBOX_FIXED_DELAY_MS=3000
-OUTBOX_MAX_ATTEMPTS=5
 ```
-
-Дополнительные переключатели (runtime switches):
-
-- `app.kafka.invoice-consumer-enabled=true`
-- `app.outbox.publisher.enabled=true`
-
-## Схема базы данных
-
-Миграции Flyway создают:
-
-- таблицы каталога и заказов
-- `outbox_events` с метаданными для повторных попыток (`attempt_count`, status, error message, timestamps)
-- `invoice_emails` для сгенерированных email-сообщений (payloads) и отслеживания доставки
-
-## Данные по умолчанию (Fixtures)
-
-При запуске приложение вставляет данные по умолчанию только если целевые таблицы пусты:
-
-- User: `Default User / default.user@example.com`
-- Products: `Notebook`, `Keyboard`, `Mouse`
 
 ## Основные эндпоинты API
 
@@ -108,7 +87,6 @@ OUTBOX_MAX_ATTEMPTS=5
 - `GET /api/outbox-events`
 
 ### Пример запроса на создание заказа
-
 ```json
 {
   "userId": 1,
@@ -116,41 +94,7 @@ OUTBOX_MAX_ATTEMPTS=5
     {
       "productId": 1,
       "quantity": 2
-    },
-    {
-      "productId": 2,
-      "quantity": 1
     }
   ]
 }
-```
-
-Эндпоинт заказа является асинхронным и возвращает `202 Accepted`. После создания заказа есть возможность проверить:
-
-- сообщения Kafka в Kafka UI
-- ожидающие и опубликованные события по адресу `GET /api/outbox-events`
-- доставленные email в Mailpit
-- переходы статусов заказа с помощью `GET /api/orders`
-
-## Локальный мониторинг (Observability)
-
-Kafka UI доступен по адресу `http://localhost:8081`.
-
-Используется для проверки:
-
-- топиков, таких как `orders.created`
-- отправленных сообщений и их полезной нагрузки (payloads)
-- consumer-групп
-
-Mailpit доступен по адресу `http://localhost:8025`.
-
-Используется для проверки:
-
-- перехваченных email, отправленных через SMTP-адаптер
-- темы/тела письма со счетом, сгенерированных на основе прочитанных событий заказа
-
-Если что-то работает нестабильно:
-```bash
-docker compose down
-docker compose up -d
 ```
