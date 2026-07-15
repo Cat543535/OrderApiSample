@@ -1,5 +1,7 @@
 package dunice.com.ru.api.sbkafkaproducersample.application.usecase;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dunice.com.ru.api.sbkafkaproducersample.application.dto.CreateOrderCommand;
 import dunice.com.ru.api.sbkafkaproducersample.application.dto.CreateOrderItemCommand;
 import dunice.com.ru.api.sbkafkaproducersample.application.exception.BusinessValidationException;
@@ -12,8 +14,6 @@ import dunice.com.ru.api.sbkafkaproducersample.domain.model.*;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tools.jackson.core.JacksonException;
-import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -129,7 +129,7 @@ public class CreateOrderService implements CreateOrderUseCase {
   private String createPayload(OrderCreatedEvent event) {
     try {
       return objectMapper.writeValueAsString(event);
-    } catch (JacksonException exception) {
+    } catch (JsonProcessingException exception) {
       throw new BusinessValidationException("Could not serialize order outbox payload");
     }
   }

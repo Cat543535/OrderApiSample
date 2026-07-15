@@ -1,5 +1,7 @@
 package dunice.com.ru.api.sbkafkaproducersample.adapter.out.messaging;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dunice.com.ru.api.sbkafkaproducersample.application.port.out.OutboxEventDispatcherPort;
 import dunice.com.ru.api.sbkafkaproducersample.domain.model.OrderCreatedEvent;
 import dunice.com.ru.api.sbkafkaproducersample.domain.model.OutboxEvent;
@@ -7,8 +9,6 @@ import dunice.com.ru.api.sbkafkaproducersample.domain.model.OutboxEventType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
-import tools.jackson.core.JacksonException;
-import tools.jackson.databind.ObjectMapper;
 
 @Component
 public class KafkaOrderEventPublisher implements OutboxEventDispatcherPort {
@@ -40,7 +40,7 @@ public class KafkaOrderEventPublisher implements OutboxEventDispatcherPort {
   private OrderCreatedEvent deserialize(String payload) {
     try {
       return objectMapper.readValue(payload, OrderCreatedEvent.class);
-    } catch (JacksonException exception) {
+    } catch (JsonProcessingException exception) {
       throw new IllegalStateException("Could not deserialize order outbox payload", exception);
     }
   }

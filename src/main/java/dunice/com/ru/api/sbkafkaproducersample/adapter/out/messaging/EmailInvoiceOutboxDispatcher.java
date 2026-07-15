@@ -1,5 +1,7 @@
 package dunice.com.ru.api.sbkafkaproducersample.adapter.out.messaging;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dunice.com.ru.api.sbkafkaproducersample.application.exception.NotFoundException;
 import dunice.com.ru.api.sbkafkaproducersample.application.port.out.EmailSenderPort;
 import dunice.com.ru.api.sbkafkaproducersample.application.port.out.InvoiceEmailPort;
@@ -12,8 +14,6 @@ import dunice.com.ru.api.sbkafkaproducersample.domain.model.OutboxEvent;
 import dunice.com.ru.api.sbkafkaproducersample.domain.model.OutboxEventType;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import tools.jackson.core.JacksonException;
-import tools.jackson.databind.ObjectMapper;
 
 @Component
 public class EmailInvoiceOutboxDispatcher implements OutboxEventDispatcherPort {
@@ -54,7 +54,7 @@ public class EmailInvoiceOutboxDispatcher implements OutboxEventDispatcherPort {
   private InvoiceEmailOutboxPayload deserialize(String payload) {
     try {
       return objectMapper.readValue(payload, InvoiceEmailOutboxPayload.class);
-    } catch (JacksonException exception) {
+    } catch (JsonProcessingException exception) {
       throw new IllegalStateException("Could not deserialize invoice email outbox payload", exception);
     }
   }

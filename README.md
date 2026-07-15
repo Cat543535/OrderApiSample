@@ -46,14 +46,9 @@
 1. Запуск PostgreSQL, Kafka, Kafka UI и Mailpit:
 
 ```bash
-docker compose up -d
+docker compose up --build
 ```
 
-2. Запуск приложения:
-
-```bash
-mvn spring-boot:run (либо в самом IDE)
-```
 
 3. Основные эндпоинты:
 

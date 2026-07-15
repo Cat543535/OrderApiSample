@@ -1,5 +1,7 @@
 package dunice.com.ru.api.sbkafkaproducersample.application.usecase;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dunice.com.ru.api.sbkafkaproducersample.application.exception.BusinessValidationException;
 import dunice.com.ru.api.sbkafkaproducersample.application.port.out.InvoiceEmailPort;
 import dunice.com.ru.api.sbkafkaproducersample.application.port.out.OutboxEventPort;
@@ -7,8 +9,6 @@ import dunice.com.ru.api.sbkafkaproducersample.domain.enumtype.OutboxStatus;
 import dunice.com.ru.api.sbkafkaproducersample.domain.model.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tools.jackson.core.JacksonException;
-import tools.jackson.databind.ObjectMapper;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -66,7 +66,7 @@ public class CreateInvoiceEmailFromOrderCreatedEventService {
   private String createPayload(InvoiceEmailOutboxPayload payload) {
     try {
       return objectMapper.writeValueAsString(payload);
-    } catch (JacksonException exception) {
+    } catch (JsonProcessingException exception) {
       throw new BusinessValidationException("Could not serialize invoice email outbox payload");
     }
   }

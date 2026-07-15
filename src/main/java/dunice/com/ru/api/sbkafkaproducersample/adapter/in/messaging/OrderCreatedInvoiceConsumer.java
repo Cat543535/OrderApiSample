@@ -1,12 +1,12 @@
 package dunice.com.ru.api.sbkafkaproducersample.adapter.in.messaging;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dunice.com.ru.api.sbkafkaproducersample.application.usecase.CreateInvoiceEmailFromOrderCreatedEventService;
 import dunice.com.ru.api.sbkafkaproducersample.domain.model.OrderCreatedEvent;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
-import tools.jackson.core.JacksonException;
-import tools.jackson.databind.ObjectMapper;
 
 @ConditionalOnProperty(value = "app.kafka.invoice-consumer-enabled", havingValue = "true", matchIfMissing = true)
 @Component
@@ -35,7 +35,7 @@ public class OrderCreatedInvoiceConsumer {
   private OrderCreatedEvent deserialize(String payload) {
     try {
       return objectMapper.readValue(payload, OrderCreatedEvent.class);
-    } catch (JacksonException exception) {
+    } catch (JsonProcessingException exception) {
       throw new IllegalStateException("Could not deserialize consumed order event", exception);
     }
   }
